@@ -118,9 +118,10 @@ export const ProviderSelector = ({ setProvider }: ProviderSelectorProps) => {
     const searchInput = useRef<HTMLInputElement>(null);
     const activeOption = useRef<HTMLLIElement>(null);
 
-    const query = search.trim().toLowerCase();
-    const matches = (provider: HostingProvider) => provider.name.toLowerCase().includes(query);
-    const groups = [
+    const normalizeName = (name: string) => name.toLowerCase().replace(/\s/g, '');
+    const query = normalizeName(search);
+    const matches = (provider: HostingProvider) => normalizeName(provider.name).includes(query);
+    const matchingGroups = [
         { key: 'not_listed', label: null, providers: [notListed].filter(matches) },
         {
             key: 'open_collaboration',
@@ -133,6 +134,9 @@ export const ProviderSelector = ({ setProvider }: ProviderSelectorProps) => {
             providers: otherProviders.filter(matches)
         }
     ].filter(group => group.providers.length > 0);
+    const groups = matchingGroups.length === 0
+        ? [{ key: 'not_listed', label: null, providers: [notListed] }]
+        : matchingGroups;
     // Flat list, so the keyboard can move through the groups
     const visibleProviders = groups.flatMap(group => group.providers);
 
@@ -284,11 +288,6 @@ export const ProviderSelector = ({ setProvider }: ProviderSelectorProps) => {
                                 })}
                             </React.Fragment>
                         ))}
-                        {visibleProviders.length === 0 && (
-                            <li className="host-select-empty" role="presentation">
-                                <Translate id="components.provider.no_search_results" description="Message shown when provider search has no matches">No providers found</Translate>
-                            </li>
-                        )}
                     </ul>
                 </div>
             )}
